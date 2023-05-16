@@ -58,9 +58,11 @@
       "comma-dangle": [
         "error",
         {
-          "arrays": "always",
+          "arrays": "only-multiline",
           "objects": "only-multiline",
-          "imports": "only-multiline"
+          "imports": "only-multiline",
+          "exports": "only-multiline",
+          "functions": "only-multiline"
         }
       ]
     }

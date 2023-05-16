@@ -18,7 +18,12 @@ const prevHalfedge = (e: number) => (e % 3 === 0 ? e + 2 : e - 1);
  * @param t 给定的三角形id
  * @return [] 三角形对应的三条边id
  */
-const edgesOfTriangle = (t: number) => [3 * t, 3 * t + 1, 3 * t + 2];
+const edgesOfTriangle = (t: number) => {
+  const a = 3 * t;
+  const b = 3 * t + 1;
+  const c = 3 * t + 2;
+  return [a, b, c];
+};
 
 /**
  * 边对应的三角形
@@ -77,7 +82,7 @@ const createPoints = (count: number, seed: number) => {
  */
 const calculateCentroids = (
   points: Array<CoordinateValue2d>,
-  delaunay: Delaunator<CoordinateValue2d>,
+  delaunay: Delaunator<CoordinateValue2d>
 ): Array<CoordinateValue2d> => {
   const numTriangles = delaunay.halfedges.length / 3;
   const centroids: Array<CoordinateValue2d> = [];
