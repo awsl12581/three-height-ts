@@ -1,7 +1,13 @@
 import {
-  BoxGeometry, BufferAttribute, BufferGeometry,
-  Curve, Line, Line3, Mesh, MeshStandardMaterial,
-  PerspectiveCamera, Points, PointsMaterial, Scene, Vector3, WebGLRenderer,
+  BufferAttribute,
+  BufferGeometry,
+  Line,
+  PerspectiveCamera,
+  Points,
+  PointsMaterial,
+  Scene,
+  Vector3,
+  WebGLRenderer,
 } from 'three';
 import Resizer from '@/modules/world/resizer/resizer';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -11,7 +17,6 @@ import cameraModule from '@/modules/world/camera/camera';
 import rendererModule from '@/modules/world/renderer/renderer';
 import sceneModule from '@/modules/world/scene/scene';
 import voronoi from '@/modules/voronoi/voronoi';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { triangleOfEdge } from '@/modules/voronoi/voronoiUtils';
 
 class World {
@@ -102,15 +107,7 @@ class World {
       const paticles = new Points(bufferGeometry, pointMaterial);
       this.scene.add(paticles);
 
-      const {
-        points,
-        centers,
-        halfEdges,
-        triangles,
-        numEdges,
-        vertices,
-        cells,
-      } = voronoiMap;
+      const { points, centers, halfEdges, numEdges, vertices, cells } = voronoiMap;
       for (let e = 0; e < cells.c.length; e += 1) {
         const pointLine = [];
         for (let y = 0; y < cells.c[e].length; y += 1) {
@@ -125,7 +122,9 @@ class World {
         const pointLine = [];
         for (let y = 0; y < cells.v[e].length; y += 1) {
           // eslint-disable-next-line max-len
-          pointLine.push(new THREE.Vector3(vertices.p[cells.v[e][y]].x, vertices.p[cells.v[e][y]].y, 2));
+          pointLine.push(
+            new THREE.Vector3(vertices.p[cells.v[e][y]].x, vertices.p[cells.v[e][y]].y, 2)
+          );
         }
         const geometry = new THREE.BufferGeometry().setFromPoints(pointLine);
         const lineMaterial = new THREE.LineBasicMaterial({ color: 'blue' });

@@ -8,7 +8,8 @@ interface CoordinateValue2d {
 
 interface VoronoiCells {
   /**
-   * 入度边`p`，存储入度边集合
+   * 入度边`p`对应的三角形集合
+   *
    * 从计算程度上来看，通过`edgesAroundPoint`函数，其入度边在映射中只属于一个集合
    *
    * 只要传入一个集合中的任意一条入度边，其返回集合都是一致的

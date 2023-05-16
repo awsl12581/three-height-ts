@@ -53,7 +53,17 @@
     "parserOptions": {
       "ecmaVersion": 2020
     },
-    "rules": {}
+    "rules": {
+      "object-curly-newline": "off",
+      "comma-dangle": [
+        "error",
+        {
+          "arrays": "always",
+          "objects": "only-multiline",
+          "imports": "only-multiline"
+        }
+      ]
+    }
   },
   "browserslist": [
     "> 1%",

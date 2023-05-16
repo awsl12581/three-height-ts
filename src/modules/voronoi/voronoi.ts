@@ -145,7 +145,7 @@ class VoronoiMap {
         const edges = edgesAroundPoint(this.halfEdges, e);
         // 对每一个入度边，计算其所在的三角形，并形成集合
         this.cells.v[p] = edges.map((edgeIndex) => triangleOfEdge(edgeIndex));
-        // 对每一个入度边，计算其相邻的对边
+        // 对每一个入度边，计算其相邻的对边，并进行标定
         this.cells.c[p] = edges.map((edgeIndex) => this.triangles[edgeIndex])
           .filter((c: number) => c < this.points.length); // cell: adjacent valid cells
         // 标定其是否为边界
