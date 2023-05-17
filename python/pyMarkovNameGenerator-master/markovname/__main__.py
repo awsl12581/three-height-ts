@@ -10,8 +10,8 @@ from typing import Union
 
 from wcwidth import wcswidth
 
-from . import Generator
-from ._version import __version__
+from generator import Generator
+from _version import __version__
 
 FILEPATH = Path(__file__).resolve().parent
 
