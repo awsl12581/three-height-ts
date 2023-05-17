@@ -76,7 +76,33 @@ const createPoints = (count: number, seed: number) => {
 };
 
 /**
- * 质心计算,中线的交点
+ *
+ * @param a 三角形点A
+ * @param b 点B
+ * @param c 点C
+ * @returns 外心坐标
+ */
+const circumcenter = (a: CoordinateValue2d, b: CoordinateValue2d, c: CoordinateValue2d) => {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const ex = c.x - a.x;
+  const ey = c.y - a.y;
+
+  const bl = dx * dx + dy * dy;
+  const cl = ex * ex + ey * ey;
+  const d = 0.5 / (dx * ey - dy * ex);
+
+  const x = a.x + (ey * bl - dy * cl) * d;
+  const y = a.y + (dx * cl - ex * bl) * d;
+  const re: CoordinateValue2d = {
+    x,
+    y,
+  };
+  return re;
+};
+
+/**
+ * 外心计算,中线的交点
  * @param points
  * @param delaunay
  */
@@ -87,46 +113,14 @@ const calculateCentroids = (
   const numTriangles = delaunay.halfedges.length / 3;
   const centroids: Array<CoordinateValue2d> = [];
   for (let t = 0; t < numTriangles; t += 1) {
-    let sumOfX = 0;
-    let sumOfY = 0;
-    for (let i = 0; i < 3; i += 1) {
-      const s = 3 * t + i;
-      const p = points[delaunay.triangles[s]];
-      sumOfX += p.x;
-      sumOfY += p.y;
-    }
-    centroids[t] = {
-      x: sumOfX / 3,
-      y: sumOfY / 3,
-    };
+    const centerPoint = circumcenter(
+      points[delaunay.triangles[3 * t + 0]],
+      points[delaunay.triangles[3 * t + 1]],
+      points[delaunay.triangles[3 * t + 2]]
+    );
+    centroids[t] = centerPoint;
   }
   return centroids;
-};
-
-/**
- *
- * @param a 三角形点A
- * @param b 点B
- * @param c 点C
- * @returns 外心坐标
- */
-const circumcenter = (a: CoordinateValue2d, b: CoordinateValue2d, c: CoordinateValue2d) => {
-  const re: CoordinateValue2d = {
-    x: (a.x + b.x + c.x) / 3,
-    y: (a.y + b.y + c.y) / 3,
-  };
-  return re;
-
-  // const ad = a.x * a.x + a.y * a.y;
-  // const bd = b.x * b.x + b.y * b.y;
-  // const cd = c.x * c.x + c.y * c.y;
-  // const D = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
-  // return [
-  //   // eslint-disable-next-line no-mixed-operators
-  //   Math.floor(1 / D * (ad * (b.y - c.y) + bd * (c.y - a.y) + cd * (a.y - b.y))),
-  //   // eslint-disable-next-line no-mixed-operators
-  //   Math.floor(1 / D * (ad * (c.x - b.x) + bd * (a.x - c.x) + cd * (b.x - a.x))),
-  // ];
 };
 
 export {

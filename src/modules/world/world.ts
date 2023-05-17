@@ -2,6 +2,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   Line,
+  Mesh,
   PerspectiveCamera,
   Points,
   PointsMaterial,
@@ -18,6 +19,7 @@ import rendererModule from '@/modules/world/renderer/renderer';
 import sceneModule from '@/modules/world/scene/scene';
 import voronoi from '@/modules/voronoi/voronoi';
 import { triangleOfEdge } from '@/modules/voronoi/voronoiUtils';
+import { Water } from 'three/examples/jsm/objects/Water';
 
 class World {
   private camera: PerspectiveCamera;
@@ -91,7 +93,7 @@ class World {
     // }
     {
       const bufferGeometry = new BufferGeometry();
-      const count = 50;
+      const count = 25;
       const seed = 5;
 
       const voronoiMap = new voronoi.VoronoiMap(count, seed);
@@ -108,42 +110,94 @@ class World {
       this.scene.add(paticles);
 
       const { points, centers, halfEdges, numEdges, vertices, cells } = voronoiMap;
-      for (let e = 0; e < cells.c.length; e += 1) {
-        const pointLine = [];
-        for (let y = 0; y < cells.c[e].length; y += 1) {
-          pointLine.push(new THREE.Vector3(points[cells.c[e][y]].x, points[cells.c[e][y]].y, 1));
+      // for (let e = 0; e < cells.c.length; e += 1) {
+      //   const pointLine = [];
+      //   for (let y = 0; y < cells.c[e].length; y += 1) {
+      //     pointLine.push(new THREE.Vector3(points[cells.c[e][y]].x, points[cells.c[e][y]].y, 1));
+      //   }
+      //   const geometry = new THREE.BufferGeometry().setFromPoints(pointLine);
+      //   const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+      //   const line = new Line(geometry, lineMaterial);
+      //   this.scene.add(line);
+      // }
+      const getTextCanvas1 = (e: number) => {
+        const width = 512;
+        const height = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#C3C3C3';
+          ctx.fillRect(0, 0, width, height);
+          ctx.font = `${32}px " bold`;
+          ctx.fillStyle = '#2891FF';
+
+          ctx.fillText(`${e}`, 10, 30);
         }
-        const geometry = new THREE.BufferGeometry().setFromPoints(pointLine);
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-        const line = new Line(geometry, lineMaterial);
-        this.scene.add(line);
-      }
+        return canvas;
+      };
       for (let e = 0; e < cells.v.length; e += 1) {
-        const pointLine = [];
-        for (let y = 0; y < cells.v[e].length; y += 1) {
-          // eslint-disable-next-line max-len
-          pointLine.push(
-            new THREE.Vector3(vertices.p[cells.v[e][y]].x, vertices.p[cells.v[e][y]].y, 2)
-          );
+        // 定义多边形形状顶点
+        const shape = new THREE.Shape();
+        shape.moveTo(vertices.p[cells.v[e][0]].x, vertices.p[cells.v[e][0]].y);
+        for (let y = 1; y < cells.v[e].length; y += 1) {
+          shape.lineTo(vertices.p[cells.v[e][y]].x, vertices.p[cells.v[e][y]].y);
         }
-        const geometry = new THREE.BufferGeometry().setFromPoints(pointLine);
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 'blue' });
-        const line = new Line(geometry, lineMaterial);
+        shape.lineTo(vertices.p[cells.v[e][0]].x, vertices.p[cells.v[e][0]].y);
+        // const geometry = new THREE.ShapeGeometry(shape);
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+          steps: 2,
+          depth: Math.random() * 10,
+        });
+        const material = new THREE.MeshPhongMaterial({
+          color: 0x00ff00,
+          side: THREE.DoubleSide,
+          map: new THREE.CanvasTexture(getTextCanvas1(e)),
+        });
+        // const mesh = new THREE.Mesh(geometry, material);
+        const line = new Mesh(geometry, material);
         this.scene.add(line);
       }
-      for (let e = 0; e < numEdges; e += 1) {
-        if (e < halfEdges[e]) {
-          const p = centers[triangleOfEdge(e)];
-          const q = centers[triangleOfEdge(halfEdges[e])];
-          const pointLine = [];
-          pointLine.push(new THREE.Vector3(p.x, p.y, 3));
-          pointLine.push(new THREE.Vector3(q.x, q.y, 3));
-          const geometry = new THREE.BufferGeometry().setFromPoints(pointLine);
-          const lineMaterial = new THREE.LineBasicMaterial({ color: 'white' });
-          const line = new Line(geometry, lineMaterial);
-          this.scene.add(line);
-        }
-      }
+      // Water
+
+      const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
+
+      const water = new Water(waterGeometry, {
+        textureWidth: 512,
+        textureHeight: 512,
+        waterNormals: new THREE.TextureLoader().load(
+          '/waternormals.jpg',
+          (texture: THREE.Texture) => {
+            // eslint-disable-next-line no-param-reassign
+            texture.wrapS = THREE.RepeatWrapping;
+            // eslint-disable-next-line no-param-reassign
+            texture.wrapT = THREE.RepeatWrapping;
+          }
+        ),
+        sunDirection: new THREE.Vector3(),
+        sunColor: 0xffffff,
+        waterColor: 0x001e0f,
+        distortionScale: 3.7,
+        fog: this.scene.fog !== undefined,
+      });
+
+      water.rotation.x = -Math.PI / 2;
+
+      this.scene.add(water);
+      // for (let e = 0; e < numEdges; e += 1) {
+      //   if (e < halfEdges[e]) {
+      //     const p = centers[triangleOfEdge(e)];
+      //     const q = centers[triangleOfEdge(halfEdges[e])];
+      //     const pointLine = [];
+      //     pointLine.push(new THREE.Vector3(p.x, p.y, 3));
+      //     pointLine.push(new THREE.Vector3(q.x, q.y, 3));
+      //     const geometry = new THREE.BufferGeometry().setFromPoints(pointLine);
+      //     const lineMaterial = new THREE.LineBasicMaterial({ color: 'white' });
+      //     const line = new Line(geometry, lineMaterial);
+      //     this.scene.add(line);
+      //   }
+      // }
     }
   }
 

@@ -1,9 +1,11 @@
 import Delaunator from 'delaunator';
 import { Vector3 } from 'three';
 import {
-  calculateCentroids, circumcenter,
+  calculateCentroids,
+  circumcenter,
   createPoints,
-  edgesAroundPoint, edgesOfTriangle,
+  edgesAroundPoint,
+  edgesOfTriangle,
   nextHalfedge,
   triangleOfEdge,
 } from '@/modules/voronoi/voronoiUtils';
@@ -79,7 +81,11 @@ class VoronoiMap {
    */
   constructor(count: number, seed: number) {
     this.points = createPoints(count, seed);
-    const delaunay = Delaunator.from(this.points, (loc) => loc.x, (loc) => loc.y);
+    const delaunay = Delaunator.from(
+      this.points,
+      (loc) => loc.x,
+      (loc) => loc.y
+    );
     this.numRegions = this.points.length;
     this.numTriangles = delaunay.halfedges.length / 3;
     this.numEdges = delaunay.halfedges.length;
@@ -137,16 +143,17 @@ class VoronoiMap {
     // 由于triangles[e] 返回半边开始的点id
     // 对于每一个半边e
     for (let e = 0; e < this.triangles.length; e += 1) {
-      // 计算传入半边下一个半边的临边（临边，就是双向边的另一部分）
+      // 计算传入半边下一个半边的开始点（也就是本胞体的中心点位置）（临边，就是双向边的另一部分）
       const p = this.triangles[nextHalfedge(e)];
       // 如果这个临边id在点的范围
       if (p < this.points.length && !this.cells.c[p]) {
         // 计算传入临边所指向的点的所有入度边的集合
         const edges = edgesAroundPoint(this.halfEdges, e);
-        // 对每一个入度边，计算其所在的三角形，并形成集合
+        // 对每一个核心点p，通过指向核心p的入度边，计算p周围的三角形的id
         this.cells.v[p] = edges.map((edgeIndex) => triangleOfEdge(edgeIndex));
-        // 对每一个入度边，计算其相邻的对边，并进行标定
-        this.cells.c[p] = edges.map((edgeIndex) => this.triangles[edgeIndex])
+        // 对每一个核心点p，计算核心p的出度边，对于每一个出度边进行判断
+        this.cells.c[p] = edges
+          .map((edgeIndex) => this.triangles[edgeIndex])
           .filter((c: number) => c < this.points.length); // cell: adjacent valid cells
         // 标定其是否为边界
         this.cells.b[p] = edges.length > this.cells.c[p].length ? 1 : 0; // cell: is border
@@ -175,8 +182,8 @@ class VoronoiMap {
    */
   triangleCenter(t: number) {
     // 三条边的坐标集合数组
-    const vertices = this.pointsOfTriangle(t)
-      .map((p: number) => this.points[p]);
+    const vertices = this.pointsOfTriangle(t).map((p: number) => this.points[p]);
+
     return circumcenter(vertices[0], vertices[1], vertices[2]);
   }
 
@@ -186,8 +193,7 @@ class VoronoiMap {
    */
   pointsOfTriangle(t: number) {
     // map() 方法返回一个新数组，数组中的元素为原始数组元素调用函数处理后的值。
-    return edgesOfTriangle(t)
-      .map((edge) => this.triangles[edge]);
+    return edgesOfTriangle(t).map((edge) => this.triangles[edge]);
   }
 
   /**

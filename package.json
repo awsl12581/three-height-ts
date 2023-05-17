@@ -12,6 +12,7 @@
     "@types/d3": "^7.4.0",
     "@types/delaunator": "^5.0.0",
     "@types/three": "^0.152.0",
+    "alea": "^1.0.1",
     "core-js": "^3.8.3",
     "delaunator": "^5.0.0",
     "element-plus": "^2.3.4",
